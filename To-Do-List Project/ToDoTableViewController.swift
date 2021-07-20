@@ -9,7 +9,7 @@ import UIKit
 
 class ToDoTableViewController: UITableViewController {
     
-    func createToDos() -> [ToDo]{
+    /*func createToDos() -> [ToDo]{
         let swift = ToDo()
         swift.name = "Learn Swift"
         swift.important = true
@@ -17,13 +17,12 @@ class ToDoTableViewController: UITableViewController {
         let dog = ToDo()
         dog.name = "Walk the Dog"
         return [swift, dog]
-    }
+    }*/
     
-    var toDos : [ToDo] = []
+    var toDos : [ToDoCD] = []
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        toDos = createToDos()
     }
 
     // MARK: - Table view data source
@@ -45,14 +44,17 @@ class ToDoTableViewController: UITableViewController {
 
         // Configure the cell...
         let toDo = toDos[indexPath.row]
-        if toDo.important {
-            cell.textLabel?.text = "❗" + toDo.name
-        }else{
-            cell.textLabel?.text = toDo.name
+        if let name = toDo.name {
+            if toDo.important {
+                cell.textLabel?.text = "❗" + toDo.name!
+            }else{
+                cell.textLabel?.text = toDo.name
+            }
+            
+            return cell
+        }
         }
         
-        return cell
-    }
     
 
     
@@ -72,8 +74,8 @@ class ToDoTableViewController: UITableViewController {
             addVC.previousVC = self
         }
         if let completeVC = segue.destination as? CompleteToDoViewController{
-            if let toDo = sender as? ToDo{
-                completeVC.selectedToDo = toDo
+            if let toDo = sender as? ToDoCD{
+                completeVC.selectedToDoCD = toDo
                 completeVC.previousVC = self
             }
         }
@@ -87,6 +89,20 @@ class ToDoTableViewController: UITableViewController {
 
       performSegue(withIdentifier: "moveToComplete", sender: toDo)
     }
-    
+    func getToDos() {
+        if let context = (UIApplication.shared.delegate as? AppDelegate)?.persistentContainer.viewContext{
+            
+            if let coreDataToDos = try? context.fetch(ToDoCD.fetchRequest()) as? [ToDoCD] {
+                if let theToDos = coreDataToDos {
+                    toDos = coreDataToDos
+                    tableView.reloadData()
+            }
+        }
+    }
+    func viewWillAppear(_animated: Bool){
+        getToDos()
+    }
+
+}
 
 }
